@@ -1,56 +1,52 @@
-"""Plain minimax, no pruning.
-
-MILESTONE M2 — implement this first, before alpha-beta. It's the
-baseline: M3's alpha-beta must return the SAME move as this on every
-test fixture, just by visiting fewer nodes. Get this right and correct
-first; alpha-beta is this function plus two extra lines of bookkeeping.
-
-Reminder of the recursion (see the worked example in chat for a traced
-version of this on a toy tree):
-    minimax(board, depth, maximizing_player)
-      if depth == 0 or board.is_terminal(): return evaluate(board)
-      if maximizing_player:
-          return max(minimax(child, depth-1, False) for child in children)
-      else:
-          return min(minimax(child, depth-1, True) for child in children)
-"""
-
+import math
+import time
 from connect4.board import Board, Player
 from connect4.evaluate import evaluate
 from connect4.agent.stats import SearchStats
 
 
-def minimax(
-    board: Board,
-    depth: int,
-    maximizing_player: Player,
-    stats: SearchStats,
-) -> float:
-    """Return the minimax value of `board` looking `depth` plies ahead.
-
-    `maximizing_player` is fixed for the whole search (the player the
-    agent is choosing a move for) — NOT the same as board.current_player(),
-    which flips every ply.
-    """
+def minimax(board: Board, depth: int, maximizing_player: Player, stats: SearchStats) -> float:
     stats.nodes_visited += 1
 
-    # TODO(M2): base case — terminal position or depth exhausted
-    #   terminal win/loss should return +inf / -inf (from maximizing_player's
-    #   perspective), a draw returns 0, and depth==0 non-terminal calls evaluate()
+    if board.is_terminal():
+        winner = board.winner()
+        if winner == maximizing_player:
+            return math.inf
+        elif winner is not None:
+            return -math.inf
+        else:
+            return 0.0
 
-    # TODO(M2): recursive case — current_player() tells you whether THIS
-    # node is a max node or a min node; maximizing_player tells you who
-    # the +inf/-inf should favour at the leaves
+    if depth == 0:
+        return evaluate(board, maximizing_player)
 
-    raise NotImplementedError
+    if board.current_player() == maximizing_player:
+        best = -math.inf
+        for move in board.valid_moves():
+            child = board.apply_move(move)
+            best = max(best, minimax(child, depth - 1, maximizing_player, stats))
+        return best
+    else:
+        best = math.inf
+        for move in board.valid_moves():
+            child = board.apply_move(move)
+            best = min(best, minimax(child, depth - 1, maximizing_player, stats))
+        return best
 
 
 def choose_move_minimax(board: Board, depth: int) -> tuple:
-    """Top-level entry point: try every legal move, keep the best one.
+    stats = SearchStats(depth_reached=depth)
+    start = time.time()
+    maximizing_player = board.current_player()
+    best_move = None
+    best_value = -math.inf
 
-    Returns (best_move, SearchStats).
-    """
-    # TODO(M2): for each move in board.valid_moves(), call minimax() on
-    # the resulting child board and keep whichever move has the best
-    # value from board.current_player()'s perspective
-    raise NotImplementedError
+    for move in board.valid_moves():
+        child = board.apply_move(move)
+        value = minimax(child, depth - 1, maximizing_player, stats)
+        if value > best_value:
+            best_value = value
+            best_move = move
+
+    stats.time_seconds = time.time() - start
+    return best_move, stats

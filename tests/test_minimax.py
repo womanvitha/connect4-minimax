@@ -14,7 +14,6 @@ import pytest
 from connect4.connect4_board import Connect4Board
 from connect4.agent.minimax import choose_move_minimax
 
-pytestmark = pytest.mark.skip(reason="M2: implement Connect4Board (M1) and minimax first")
 
 
 def test_takes_immediate_winning_move():

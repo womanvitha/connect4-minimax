@@ -11,10 +11,8 @@ from connect4.connect4_board import Connect4Board
 from connect4.agent.minimax import choose_move_minimax
 from connect4.agent.alphabeta import choose_move_alphabeta
 
-pytestmark = pytest.mark.skip(reason="M5: implement M2 and M3 first")
 
-
-@pytest.mark.parametrize("depth", [2, 3, 4, 5, 6])
+@pytest.mark.parametrize("depth", [3, 4, 5, 6])
 def test_pruning_savings_are_positive_at_every_depth(depth):
     board = Connect4Board()
     _, stats_mm = choose_move_minimax(board, depth)

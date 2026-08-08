@@ -1,41 +1,43 @@
-"""MILESTONE M4.
-
-Run with: python -m cli.play_cli
-
-The cheapest possible way to confirm the whole M1-M3 stack actually
-works end to end before investing time in a web UI. If this is
-frustrating or buggy to play against, the web UI will be too.
-"""
-
 from connect4.connect4_board import Connect4Board
+from connect4.board import Player
 from connect4.agent.agent import choose_move
 
 
-def print_board(board: Connect4Board) -> None:
-    # TODO(M4): print a readable ASCII grid (e.g. using board.__repr__
-    # once that's filled in, or directly here)
-    print(board)
+def play():
+    print("Connect 4 — you are X (Player 1), AI is O (Player 2)")
+    depth = input("AI search depth (1=easy, 4=medium, 6=hard): ").strip()
+    depth = int(depth) if depth.isdigit() else 4
 
-
-def play() -> None:
     board = Connect4Board()
-    depth = int(input("AI search depth (try 4-6 to start): ") or 4)
 
     while not board.is_terminal():
-        print_board(board)
-        if board.current_player().value == 1:  # human is Player.ONE
-            move = int(input(f"Your move {board.valid_moves()}: "))
-            board = board.apply_move(move)
+        print("\n" + repr(board))
+
+        if board.current_player() == Player.ONE:
+            raw = input("Your move (0-6): ").strip()
+            if not raw.isdigit() or int(raw) not in board.valid_moves():
+                print(f"Invalid — choose from {board.valid_moves()}")
+                continue
+            board = board.apply_move(int(raw))
         else:
+            print("AI thinking...")
             move, stats = choose_move(board, depth)
-            print(f"AI plays column {move} "
-                  f"({stats.nodes_visited} nodes, {stats.nodes_pruned} pruned)")
+            print(f"AI plays column {move}  "
+                  f"({stats.nodes_visited} nodes visited, "
+                  f"{stats.nodes_pruned} pruned, "
+                  f"{stats.time_seconds:.2f}s)")
             board = board.apply_move(move)
 
-    print_board(board)
+    print("\n" + repr(board))
     winner = board.winner()
-    print(f"Winner: {winner}" if winner else "Draw!")
+    if winner == Player.ONE:
+        print("You win!")
+    elif winner == Player.TWO:
+        print("AI wins!")
+    else:
+        print("Draw!")
 
 
 if __name__ == "__main__":
     play()
+    

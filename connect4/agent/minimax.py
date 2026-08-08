@@ -38,7 +38,7 @@ def choose_move_minimax(board: Board, depth: int) -> tuple:
     stats = SearchStats(depth_reached=depth)
     start = time.time()
     maximizing_player = board.current_player()
-    best_move = None
+    best_move = board.valid_moves()[0]
     best_value = -math.inf
 
     for move in board.valid_moves():

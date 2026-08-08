@@ -1,30 +1,69 @@
-"""Heuristic evaluation for non-terminal positions at the search cutoff.
-
-MILESTONE M2 (basic) / iterate later — this is the one file worth
-revisiting after everything else works, since it's what makes the
-agent look "smart" rather than random at shallow depths.
-
-Suggested starting heuristic (score from Player.ONE's perspective,
-negate for Player.TWO):
-    + heavily reward actual wins / penalise losses (handled by the
-      search itself returning +inf/-inf, not this function)
-    + centre-column control (pieces near column 3 are more valuable —
-      they participate in more possible lines of 4)
-    + count of open 2-in-a-rows and 3-in-a-rows for each player,
-      weighted (e.g. 3-in-a-row worth much more than 2-in-a-row)
-"""
-
 from connect4.board import Board, Player
+from connect4.connect4_board import Connect4Board, ROWS, COLS
 
 
 def evaluate(board: Board, perspective: Player) -> float:
-    """Static evaluation of `board` from `perspective`'s point of view.
+    """Score the board from `perspective`'s point of view. Higher = better."""
+    assert isinstance(board, Connect4Board)
+    grid = board._grid
+    opponent = perspective.other
 
-    Higher is better for `perspective`. Only called on non-terminal
-    boards at the depth cutoff — terminal wins/losses/draws are scored
-    directly by the search functions in agent/.
-    """
-    # TODO(M2): replace with a real heuristic; this stub treats every
-    # position as neutral, which will make the depth-limited agent play
-    # essentially randomly until this is implemented.
+    score = 0.0
+
+    # centre column control — pieces here participate in the most possible lines
+    centre_col = COLS // 2
+    centre_pieces = sum(1 for row in range(ROWS) if grid[row][centre_col] == perspective)
+    score += centre_pieces * 3
+
+    # score every window of 4 cells in all directions
+    windows = _all_windows(grid)
+    for window in windows:
+        score += _score_window(window, perspective, opponent)
+
+    return score
+
+
+def _score_window(window: list, player: Player, opponent: Player) -> float:
+    mine = window.count(player)
+    theirs = window.count(opponent)
+    empty = window.count(None)
+
+    # window blocked by opponent — no value to us
+    if theirs > 0 and mine > 0:
+        return 0.0
+
+    if mine == 4:
+        return 100.0
+    if mine == 3 and empty == 1:
+        return 5.0
+    if mine == 2 and empty == 2:
+        return 2.0
+    if theirs == 3 and empty == 1:
+        return -4.0   # urgently block opponent's three-in-a-row
     return 0.0
+
+
+def _all_windows(grid: list) -> list:
+    windows = []
+
+    # horizontal
+    for row in range(ROWS):
+        for col in range(COLS - 3):
+            windows.append([grid[row][col + i] for i in range(4)])
+
+    # vertical
+    for row in range(ROWS - 3):
+        for col in range(COLS):
+            windows.append([grid[row + i][col] for i in range(4)])
+
+    # diagonal down-right
+    for row in range(ROWS - 3):
+        for col in range(COLS - 3):
+            windows.append([grid[row + i][col + i] for i in range(4)])
+
+    # diagonal down-left
+    for row in range(ROWS - 3):
+        for col in range(3, COLS):
+            windows.append([grid[row + i][col - i] for i in range(4)])
+
+    return windows

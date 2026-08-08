@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--
+  MILESTONE M6.
+
+  Plan: load Pyodide, use micropip (or pyodide's loadPackage with a
+  local wheel/tarball of the `connect4` package) to install your actual
+  Python code, then call connect4.choose_move(...) directly from JS via
+  pyodide.runPython / pyodide.pyimport. Board rendering and click
+  handling stay in plain JS/HTML — only the AI decision goes through
+  Python. See main.js for the TODOs.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Connect 4 vs Minimax AI</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
+</head>
+<body>
+  <h1>Connect 4 vs Minimax AI</h1>
+  <p id="status">Loading Python runtime&hellip;</p>
+
+  <label for="depth">Difficulty (search depth): </label>
+  <input type="range" id="depth" min="1" max="8" value="4">
+  <span id="depth-label">4</span>
+
+  <div id="board"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>

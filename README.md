@@ -1,78 +1,89 @@
-# Connect 4 AI — Minimax with Alpha-Beta Pruning
+# Connect 4 — Minimax AI with Alpha-Beta Pruning
 
-A Connect 4 opponent built from AI coursework (minimax, alpha-beta
-pruning), playable in the browser, with an adjustable difficulty
-(search depth) and a live comparison of alpha-beta vs plain minimax
-node counts.
+A Connect 4 opponent built from AI coursework, playable in the browser.
+The AI uses minimax search with alpha-beta pruning and an adjustable search
+depth (difficulty). The stats bar shows live node counts after every AI move,
+making the pruning optimisation visible as you play.
 
-*Status: repo skeleton — see the milestone checklist below.*
+**[Play it live](https://womanvitha.github.io/connect4-minimax)**
 
-<!-- Once M6 is done: live demo link + a short GIF of a game in progress -->
-
-## Features (target)
-
-- Play Connect 4 against a minimax + alpha-beta agent, in the browser
-- Adjustable difficulty via search depth
-- Node-count comparison: alpha-beta vs plain minimax, at each depth
+---
 
 ## How it works
 
-Minimax explores the game tree of possible future moves and assumes
-both players play optimally; alpha-beta pruning skips branches that
-are provably irrelevant to the final decision, without changing the
-result. See `benchmarks/compare_nodes.py` for measured node-count
-savings once M5 is done.
+Minimax explores the game tree of possible future positions, assuming both
+players play optimally. It scores terminal positions as win/loss/draw, and
+non-terminal positions using a heuristic that rewards centre-column control
+and open lines of 2 and 3 pieces.
+
+Alpha-beta pruning cuts branches that cannot affect the final decision —
+if a position is already known to be worse than a previously explored option,
+the search stops early. This produces the identical move as plain minimax,
+but visits significantly fewer nodes.
+
+## Node-count savings (from the opening position)
+
+| Depth | Minimax nodes | Alpha-beta nodes | Nodes saved | Saving |
+|------:|-------------:|-----------------:|------------:|-------:|
+|     3 |           399 |              296 |         103 |  25.8% |
+|     4 |         2,800 |            1,227 |       1,573 |  56.2% |
+|     5 |        19,607 |            6,557 |      13,050 |  66.6% |
+|     6 |       137,256 |           24,764 |     112,492 |  82.0% |
+
+At depth 6, alpha-beta visits 82% fewer nodes while making the same move.
+Deeper search means stronger play — this is what makes the "Hard" difficulty
+actually hard.
 
 ## Tech stack
 
 - **Core + tests:** Python (stdlib only), pytest
-- **Frontend:** Pyodide (the Python package runs directly in-browser
-  via WebAssembly) + vanilla HTML/CSS/JS — no backend, deployed as a
-  static site on GitHub Pages
+- **Search:** minimax + alpha-beta pruning, adjustable depth
+- **Evaluation:** centre-column control + open window scoring
+- **Frontend:** Pyodide (Python compiled to WebAssembly — the same Python
+  package runs directly in your browser, no backend required)
+- **Deployment:** GitHub Pages (static, free, zero cold starts)
 
 ## Project structure
 
-```
-connect4/            core package: board rules, evaluation, agents
-  board.py             abstract Board interface (game-agnostic)
-  connect4_board.py    Connect 4 rules
-  evaluate.py          heuristic evaluation function
-  agent/
-    minimax.py           plain minimax + node counter
-    alphabeta.py         minimax + alpha-beta pruning + node counter
-    agent.py             unified choose_move() interface
-tests/                pytest suite (mirrors the milestones below)
-benchmarks/           node-count comparison script
-cli/                  terminal play, for sanity-checking the agent
-web/                  Pyodide-based browser frontend
-```
+connect4/ core package
+board.py abstract Board interface (game-agnostic)
+connect4_board.py Connect 4 rules + win detection
+evaluate.py heuristic position evaluation
+agent/
+minimax.py plain minimax + node counter
+alphabeta.py minimax + alpha-beta pruning + node counter
+agent.py unified choose_move() interface
+tests/ pytest suite (M1–M5)
+benchmarks/ node-count comparison script
+cli/ terminal version
+docs/ Pyodide browser frontend
 
 ## Running locally
 
 ```bash
 pip install -e ".[dev]"
-pytest -v                     # run the test suite
-python -m cli.play_cli        # play against the AI in the terminal
-python -m benchmarks.compare_nodes   # node-count comparison table
+pytest -v
+python -m cli.play_cli
+python -m benchmarks.compare_nodes
 ```
 
 ## Milestones
 
-- [ ] M1 — Board & rules engine (Connect 4), full test coverage
-- [ ] M2 — Plain minimax agent + node counter
-- [ ] M3 — Alpha-beta pruning, proven equivalent to M2's move choice
-- [ ] M4 — Playable terminal (CLI) version
-- [ ] M5 — Node-count benchmark script
-- [ ] M6 — Browser UI (Pyodide), deployed on GitHub Pages
-- [ ] M7 — README polish, demo GIF, CI badge
+- [x] M1 — Board & rules engine (Connect 4), full test coverage
+- [x] M2 — Plain minimax agent + node counter
+- [x] M3 — Alpha-beta pruning, proven equivalent to M2's move choice
+- [x] M4 — Playable terminal (CLI) version
+- [x] M5 — Position evaluation heuristic + node-count benchmark
+- [x] M6 — Browser UI (Pyodide), deployed on GitHub Pages
+- [x] M7 — README, CI badge
 
-## Roadmap / stretch goals
+## Roadmap
 
 - Othello as a second `Board` implementation, reusing the same agents
 - Move ordering (centre-column-first) to improve pruning further
-- Iterative deepening with a time budget instead of a fixed depth
+- Iterative deepening with a time budget instead of fixed depth
 
 ## Background
 
-Built as a portfolio project from second-year AI coursework covering
+Built as a second-year portfolio project from AI coursework covering
 minimax, alpha-beta pruning, and CSP backtracking.

@@ -1,3 +1,5 @@
+![CI](https://github.com/womanvitha/connect4-minimax/actions/workflows/ci.yml/badge.svg)
+
 # Connect 4 — Minimax AI with Alpha-Beta Pruning
 
 A Connect 4 opponent built from AI coursework, playable in the browser.

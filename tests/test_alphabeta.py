@@ -1,22 +1,7 @@
-"""M3 spec.
-
-The whole point of this file: alpha-beta must be a pure speed
-optimisation, never a behaviour change. Every test here should compare
-choose_move_alphabeta() against choose_move_minimax() on the SAME
-fixture, not check alpha-beta's move against a hardcoded "correct"
-answer — that keeps the two files honest against each other rather
-than against your (possibly wrong) intuition about the position.
-"""
-
 import pytest
-
 from connect4.connect4_board import Connect4Board
 from connect4.agent.minimax import choose_move_minimax
 from connect4.agent.alphabeta import choose_move_alphabeta
-
-pytestmark = pytest.mark.skip(
-    reason="M3: implement minimax (M2) and alpha-beta first"
-)
 
 
 @pytest.mark.parametrize("depth", [2, 3, 4, 5])
